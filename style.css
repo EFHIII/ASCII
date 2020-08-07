@@ -5,16 +5,39 @@ html, body {
   padding: 0;
 }
 
+.txt {
+  width: 100%;
+  resize: none;
+  font-size: 4px;
+  font-family: monospace;
+  /*letter-spacing: 0.5px;/**/
+  white-space: nowrap;
+}
+
+.can{
+  visibility:hidden;
+  position:fixed;
+}
+
 input {
   font-size: 120%;
 }
 
 .btn {
-  border: none; /* Remove borders */
-  color: white; /* Add a text color */
+  border: none;
+  /* Remove borders */
+  color: white;
+  /* Add a text color */
   /*padding: 14px 28px; /* Add some padding */
   padding: 4px;
-  cursor: pointer; /* Add a pointer cursor on mouse-over */
+  cursor: pointer;
+  /* Add a pointer cursor on mouse-over */
 }
-.btn {background-color: #444;}
-.btn:hover {background: #222;}
+
+.btn {
+  background-color: #444;
+}
+
+.btn:hover {
+  background: #222;
+}
