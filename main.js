@@ -92,6 +92,24 @@ function escapeHtml(unsafe) {
 p = a => new Promise((r) => { setTimeout(r, 1e3) });
 D = a => document.getElementById(a);
 
+var defaultUrl = { url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png', size: 200, ratio: 0.82, type:"0" };
+
+function setUrl() {
+  if(!history.pushState) { return; }
+  let qs = '?';
+  let first = true;
+  for(let el in defaultUrl) {
+    let element = document.getElementById(el);
+    if(element.value != defaultUrl[el]) {
+      if(!first) { qs += '&'; }
+      first = false;
+      qs += el + '=' + encodeURIComponent(element.value);
+    }
+  }
+  var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + qs;
+  window.history.pushState({ path: newurl }, '', newurl);
+}
+
 function drawBrail(w, h, a) {
   let t = '';
   for(i = 0; i < h - 2; i += 4) {
@@ -185,6 +203,7 @@ async function submitSearch(a) {
 
 async function loadExample() {
   DV = D('type').value;
+  setUrl();
   if(D('type').value >= 0) {
     Brail = false;
     C = P[D('type').value];
@@ -194,4 +213,4 @@ async function loadExample() {
   D('t').innerHTML = escapeHtml(await ASCII('test.png', 49)) + '<br><hr><br>' + escapeHtml(await ASCII('test.png', 100)) + '<br><hr><br>' + escapeHtml(await ASCII('test.png', 199));
   await submitSearch();
 }
-loadExample(1);
+loadExample();
