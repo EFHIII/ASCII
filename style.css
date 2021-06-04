@@ -9,7 +9,7 @@ html, body {
   width: 100%;
   resize: none;
   font-size: 4px;
-  font-family: monospace;
+  font-family: "Fira Code";
   /*letter-spacing: 0.5px;/**/
   white-space: nowrap;
 }
