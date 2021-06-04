@@ -178,6 +178,34 @@ function floyd(colorDepth, tempData, width, height) {
 
 let sv=[];
 
+function drawBoxDevisionSilhouette(w, h, a) {
+  const blocks = " ▖▗▄▘▌▚▙▝▞▐▟▀▛▜█";
+
+  a=a.map(a=>(a/255)>0.5?1:0);
+
+  let t = '';
+  for(i = 0; i < h-3; i +=2) {
+    for(j = 0; j < w-1; j +=2) {
+      if(invert){
+        t += blocks[
+          a[(j+(1+i)*w)*4]*1+
+          a[(1+j+(1+i)*w)*4]*2+
+          a[(j+(i)*w)*4]*4+
+          a[(1+j+(i)*w)*4]*8];
+      }
+      else{
+        t += blocks[
+          15-a[(j+(1+i)*w)*4]*1-
+          a[(1+j+(1+i)*w)*4]*2-
+          a[(j+(i)*w)*4]*4-
+          a[(1+j+(i)*w)*4]*8];
+      }
+    }
+    t += '\n';
+  }
+  return t;
+}
+
 function drawBoxGradient(w, h, a) {
   const palette = ' ▏▎▍▌▋▊▉█';
 
@@ -206,10 +234,10 @@ function drawBoxDevision(w, h, a) {
   for(i = 0; i < h-3; i +=2) {
     for(j = 0; j < w-1; j +=2) {
       t += blocks[
-        15-dither(i,j+1,a[(1+j+(i)*w)*4])*4-
-        dither(i+1,j+1,a[(1+j+(1+i)*w)*4])*8-
-        dither(i,j,a[(j+(i)*w)*4])-
-        dither(i+1,j,a[(j+(1+i)*w)*4])*2];
+        15-dither(i,j+1,a[(1+j+(i)*w)*4])*8-
+        dither(i+1,j+1,a[(1+j+(1+i)*w)*4])*2-
+        dither(i,j,a[(j+(i)*w)*4])*4-
+        dither(i+1,j,a[(j+(1+i)*w)*4])];
     }
     t += '\n';
   }
@@ -243,10 +271,10 @@ function drawBoxDevisionFloyd(w, h, a) {
   for(i = 0; i < h-3; i +=2) {
     for(j = 0; j < w-1; j +=2) {
       t += blocks[
-        newData[1+j+(i)*w]*4+
-        newData[1+j+(1+i)*w]*8+
-        newData[j+(i)*w]+
-        newData[j+(1+i)*w]*2];
+        newData[1+j+(i)*w]*8+
+        newData[1+j+(1+i)*w]*2+
+        newData[j+(i)*w]*4+
+        newData[j+(1+i)*w]];
     }
     t += '\n';
   }
@@ -298,6 +326,9 @@ async function ASCII(url, size) {
   }
   if(DV == 7){
     return drawBoxDevisionFloyd(W, H, a);
+  }
+  if(DV == 8){
+    return drawBoxDevisionSilhouette(W, H, a);
   }
   for(i = 0; i < H - 1; i += 2) {
     for(j = 0; j < W; j++) {
