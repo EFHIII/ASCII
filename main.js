@@ -206,9 +206,9 @@ function drawBoxDevisionSilhouette(w, h, a) {
   return t;
 }
 
-function drawBoxGradient(w, h, a) {
-  const palette = ' ▏▎▍▌▋▊▉█';
+let palette = ' ▏▎▍▌▋▊▉█';
 
+function drawBoxGradient(w, h, a) {
   a=a.map(a=>(a/255)*(a/255)*255);
 
   let t = '';
@@ -245,8 +245,6 @@ function drawBoxDevision(w, h, a) {
 }
 
 function drawBoxGradientFloyd(w, h, a) {
-  const palette = ' ▏▎▍▌▋▊▉█';
-
   let newData = floyd(palette.length-1, a.map(a=>(a/255)*(a/255)*255), w*1, h*1);
 
   sv=newData;
