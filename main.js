@@ -133,7 +133,6 @@ function drawBrail(w, h, a) {
 }
 
 function floyd(colorDepth, tempData, width, height) {
-  console.log([width,height]);
   let ans=tempData.slice();
 
   let maxV = colorDepth / 255;

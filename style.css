@@ -5,11 +5,19 @@ html, body {
   padding: 0;
 }
 
+@font-face {
+  font-family: 'Fira Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url(https://fonts.gstatic.com/l/font?kit=N0bX2SlFPv1weGeLZDtQJOz1uee0B_wmdk_wMmy97RLWpEPjQVCGDrBkcudBjPYuDXCU5Q&skey=bb26c8d476ab3f05&v=v9) format('woff2');
+}
+
 .txt {
   width: 100%;
   resize: none;
   font-size: 4px;
-  font-family: "Fira Code";
+  font-family: "Fira Mono", "Fira Code", monospace
   /*letter-spacing: 0.5px;/**/
   white-space: nowrap;
 }
