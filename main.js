@@ -197,7 +197,6 @@ function drawBoxGradient(w, h, a) {
   }
   return t;
 }
-
 function drawBoxDevision(w, h, a) {
   const blocks = " ▖▗▄▘▌▚▙▝▞▐▟▀▛▜█";
 
@@ -207,10 +206,10 @@ function drawBoxDevision(w, h, a) {
   for(i = 0; i < h-3; i +=2) {
     for(j = 0; j < w-1; j +=2) {
       t += blocks[
-        15-dither(i,j+1,a[(1+j+(i)*w)*4])-
-        dither(i+1,j+1,a[(1+j+(1+i)*w)*4])*2-
-        dither(i,j,a[(j+(i)*w)*4])*4-
-        dither(i+1,j,a[(j+(1+i)*w)*4])*8];
+        15-dither(i,j+1,a[(1+j+(i)*w)*4])*4-
+        dither(i+1,j+1,a[(1+j+(1+i)*w)*4])*8-
+        dither(i,j,a[(j+(i)*w)*4])-
+        dither(i+1,j,a[(j+(1+i)*w)*4])*2];
     }
     t += '\n';
   }
@@ -243,7 +242,11 @@ function drawBoxDevisionFloyd(w, h, a) {
   let t = '';
   for(i = 0; i < h-3; i +=2) {
     for(j = 0; j < w-1; j +=2) {
-      t += blocks[newData[1+j+(i)*w]+newData[1+j+(1+i)*w]*2+newData[j+(i)*w]*4+newData[j+(1+i)*w]*8];
+      t += blocks[
+        newData[1+j+(i)*w]*4+
+        newData[1+j+(1+i)*w]*8+
+        newData[j+(i)*w]+
+        newData[j+(1+i)*w]*2];
     }
     t += '\n';
   }
