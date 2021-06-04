@@ -17,7 +17,7 @@ html, body {
   width: 100%;
   resize: none;
   font-size: 4px;
-  font-family: "Fira Mono", "Fira Code", monospace
+  font-family: "Fira Mono", "Fira Code", monospace;
   /*letter-spacing: 0.5px;/**/
   white-space: nowrap;
 }
