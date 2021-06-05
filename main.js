@@ -207,8 +207,8 @@ function drawBoxDevisionSilhouette(w, h, a) {
 }
 
 let palette = ' ▏▎▍▌▋▊▉█';
-let palette2 = ["`'\"P▀█", " :+#■█", ".,╥g▄█"];
-let palette3 = ['▀▀██',' ■█','▄▄█'];
+palette2=["`'\"▀██", " :+#▒█", ".,g▄██"]
+let palette3 = ['▀▀██',' ▒█','▄▄█'];
 
 function drawBoxGradient(w, h, a) {
   a=a.map(a=>(a/255)*(a/255)*255);
@@ -304,13 +304,13 @@ function drawBoxGradient2(W, H, a, pal = palette2) {
 }
 
 function drawBoxGradientFloyd2(w, h, a) {
-  let newData = floyd(palette2[0].length-1.5, a, w*1, h*1);
+  let newData = floyd(palette2[0].length-1, a.map(a=>a*(palette2[0].length-1.3)/(palette2[0].length-1)), w*1, h*1);
 
   let t = '';
   for(i = 0; i < H-1; i +=2) {
     for(j = 0; j < W; j ++) {
-        A = Math.round(R(255-newData[i * W + j]*255/(palette2[0].length-1.5))/255*(palette2[0].length-1.5));
-        B = Math.round(R(255-newData[(i + 1) * W + j]*255/(palette2[0].length-1.5))/255*(palette2[0].length-1.5));
+        A = Math.round(R(255-newData[i * W + j]*255/(palette2[0].length-1))/255*(palette2[0].length-1));
+        B = Math.round(R(255-newData[(i + 1) * W + j]*255/(palette2[0].length-1))/255*(palette2[0].length-1));
         t += palette2[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
     }
     t += '\n';
