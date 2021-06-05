@@ -96,7 +96,7 @@ function escapeHtml(unsafe) {
 p = a => new Promise((r) => { setTimeout(r, 1e3) });
 D = a => document.getElementById(a);
 
-let defaultUrl = { url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png', size: 200, ratio: 1, power: 2, type:"5" };
+let defaultUrl = { url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png', size: 200, ratio: 1, power: 1, contrast:1, brightness:1, type:"5" };
 
 function setUrl() {
   if(!history.pushState) { return; }
@@ -114,7 +114,7 @@ function setUrl() {
   window.history.pushState({ path: newurl }, '', newurl);
 }
 
-let power = 2;
+let power = 1;
 
 function drawBrail(w, h, a) {
   if(invert){
@@ -215,8 +215,9 @@ function drawBoxDevisionSilhouette(w, h, a) {
 }
 
 let palette = ' ▏▎▍▌▋▊▉█';
-palette2=["`'\"▀██", " :+#▒█", ".,g▄██"]
-let palette3 = ['▀▀██',' ▒█','▄▄█'];
+let palette2=["`'\"▀██", " :+#■█", ".,g▄██"]
+//let palette2=["`'\"▀██", " :+#▒█", ".,g▄██"]
+let palette3 = ['▀▀██',' ■█','▄▄█'];
 
 function drawBoxGradient(w, h, a) {
   if(!invert){
@@ -364,7 +365,7 @@ async function ASCII(url, size) {
   await p();
   W = c.width = size;
   H = c.height = size * s.height / s.width * Ratio * (Brail ? 1.35 : 1) * (DV > 6 ? 0.5 : 1);
-  X.filter = DV == 6 ? `grayscale(100%) contrast(25600%)` : `grayscale(100%)`;
+  X.filter = DV == 6 ? `grayscale(100%) contrast(${D('contrast').value*25600}%) brightness(${D('brightness').value*100}%)` : `grayscale(100%) contrast(${D('contrast').value*100}%) brightness(${D('brightness').value*100}%)`;
   X.drawImage(s, 0, 0, W, H);
   a = X.getImageData(0, 0, W, H).data;
 
