@@ -95,7 +95,7 @@ function escapeHtml(unsafe) {
 p = a => new Promise((r) => { setTimeout(r, 1e3) });
 D = a => document.getElementById(a);
 
-let defaultUrl = { url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png', size: 200, ratio: 0.82, type:"0" };
+let defaultUrl = { url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png', size: 200, ratio: 1, type:"5" };
 
 function setUrl() {
   if(!history.pushState) { return; }
@@ -207,18 +207,20 @@ function drawBoxDevisionSilhouette(w, h, a) {
 }
 
 let palette = ' ▏▎▍▌▋▊▉█';
+let palette2 = ['`"^P▀█',' -+#▌█','__,g▄█'];
+let palette3 = ['▀▀█',' ▌█','▄▄█'];
 
 function drawBoxGradient(w, h, a) {
   a=a.map(a=>(a/255)*(a/255)*255);
 
   let t = '';
-  for(i = 0; i < h-1; i ++) {
+  for(i = 0; i < h; i ++) {
     for(j = 0; j < w; j ++) {
       if(invert){
-        t += palette[(a[(j+i*w)*4]/255*(palette.length-2)>>0)+1-dither(i,j,((a[(j+i*w)*4]/255*(palette.length-2))%1)*255)];
+        t += palette[(a[(j+i*w)*4]/255*(palette.length-1)>>0)+1-dither(i,j,((a[(j+i*w)*4]/255*(palette.length-1))%1)*255)];
       }
       else{
-        t += palette[palette.length-2-(a[(j+i*w)*4]/255*(palette.length-2)>>0)+1-dither(i,j,((a[(j+i*w)*4]/255*(palette.length-2))%1)*255)];
+        t += palette[palette.length-1-(a[(j+i*w)*4]/255*(palette.length-1)>>0)+1-dither(i,j,((a[(j+i*w)*4]/255*(palette.length-1))%1)*255)];
       }
     }
     t += '\n';
@@ -231,7 +233,7 @@ function drawBoxDevision(w, h, a) {
   a=a.map(a=>(a/255)*(a/255)*255);
 
   let t = '';
-  for(i = 0; i < h-3; i +=2) {
+  for(i = 0; i < h-1; i +=2) {
     for(j = 0; j < w-1; j +=2) {
       t += blocks[
         15-dither(i,j+1,a[(1+j+(i)*w)*4])*8-
@@ -250,7 +252,7 @@ function drawBoxGradientFloyd(w, h, a) {
   sv=newData;
 
   let t = '';
-  for(i = 0; i < h-1; i ++) {
+  for(i = 0; i < h; i ++) {
     for(j = 0; j < w; j ++) {
       t += palette[newData[j+i*w]];
     }
@@ -266,13 +268,50 @@ function drawBoxDevisionFloyd(w, h, a) {
   sv=newData;
 
   let t = '';
-  for(i = 0; i < h-3; i +=2) {
+  for(i = 0; i < h-1; i +=2) {
     for(j = 0; j < w-1; j +=2) {
       t += blocks[
         newData[1+j+(i)*w]*8+
         newData[1+j+(1+i)*w]*2+
         newData[j+(i)*w]*4+
         newData[j+(1+i)*w]];
+    }
+    t += '\n';
+  }
+  return t;
+}
+
+
+function drawBoxGradient2(W, H, a, pal = palette2) {
+  let newData = [];
+
+  for(let j=0;j<H;j++){
+    for(let i=0;i<W;i++){
+      newData.push((a[(i+j*W)*4]/255*(pal[0].length-1)>>0)+1-dither(i,j,(a[(i+j*W)*4]/255*(pal[0].length-1)%1)*255),0,0,255);
+    }
+  }
+
+  let t = '';
+  for(i = 0; i < H-1; i +=2) {
+    for(j = 0; j < W; j ++) {
+        A = Math.round(R(255-newData[(i * W + j) * 4]*255/(pal[0].length-1))/255*(pal[0].length-1));
+        B = Math.round(R(255-newData[((i + 1) * W + j) * 4]*255/(pal[0].length-1))/255*(pal[0].length-1));
+        t += pal[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
+    }
+    t += '\n';
+  }
+  return t;
+}
+
+function drawBoxGradientFloyd2(w, h, a) {
+  let newData = floyd(palette2[0].length-1, a, w*1, h*1);
+
+  let t = '';
+  for(i = 0; i < H-1; i +=2) {
+    for(j = 0; j < W; j ++) {
+        A = Math.round(R(255-newData[i * W + j]*255/(palette2[0].length-1))/255*(palette2[0].length-1));
+        B = Math.round(R(255-newData[(i + 1) * W + j]*255/(palette2[0].length-1))/255*(palette2[0].length-1));
+        t += palette2[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
     }
     t += '\n';
   }
@@ -287,8 +326,8 @@ async function ASCII(url, size) {
   X = c.getContext('2d');
   await p();
   W = c.width = size;
-  H = c.height = size * s.height / s.width * Ratio * (Brail ? 1.35 : 1) * (DV > 3 ? 0.5 : 1);
-  X.filter = "grayscale(100)";
+  H = c.height = size * s.height / s.width * Ratio * (Brail ? 1.35 : 1) * (DV > 6 ? 0.5 : 1);
+  X.filter = DV == 6 ? "grayscale(100%) contrast(25600%)" : "grayscale(100%)";
   X.drawImage(s, 0, 0, W, H);
   a = X.getImageData(0, 0, W, H).data;
 
@@ -300,7 +339,7 @@ async function ASCII(url, size) {
   b = 0;
   for(i = 0; i < H - 1; i++) {
     for(j = 0; j < W - 1; j++) {
-      A = a[(i * (W >> 0) + j) * 4];
+      A = a[(i * W + j) * 4];
       d = Math.min(A, d);
       b = Math.max(A, b);
     }
@@ -314,23 +353,33 @@ async function ASCII(url, size) {
   }
 
   if(DV == 4){
-    return drawBoxGradient(W, H, a);
+    return drawBoxGradient2(W, H, a);
   }
   if(DV == 5){
-    return drawBoxDevision(W, H, a);
+    return drawBoxGradientFloyd2(W, H, a);
   }
   if(DV == 6){
-    return drawBoxGradientFloyd(W, H, a);
+    return drawBoxGradient2(W, H, a, palette3);
   }
+
   if(DV == 7){
-    return drawBoxDevisionFloyd(W, H, a);
+    return drawBoxGradient(W, H, a);
   }
   if(DV == 8){
+    return drawBoxDevision(W, H, a);
+  }
+  if(DV == 9){
+    return drawBoxGradientFloyd(W, H, a);
+  }
+  if(DV == 10){
+    return drawBoxDevisionFloyd(W, H, a);
+  }
+  if(DV == 11){
     return drawBoxDevisionSilhouette(W, H, a);
   }
   for(i = 0; i < H - 1; i += 2) {
     for(j = 0; j < W; j++) {
-      A = R(a[(i * (W >> 0) + j) * 4]), B = R(a[((i + 1) * (W >> 0) + j) * 4]);
+      A = R(a[(i * W + j) * 4]), B = R(a[((i + 1) * W + j) * 4]);
       t += C[(A + B) / 512 * C.length >> 0][Math.abs(A - B) < 512 / 25 ? 2 : A > B ? 0 : 1];
     }
     t += '\n';
@@ -359,7 +408,7 @@ function invertColors() {
   start = false;
 }
 toggleBlack();
-DV = '-1';
+DV = '5';
 async function submitSearch(a) {
   Ratio = D('ratio').value;
   if(a||DV != D('type').value) { await loadExample(); }

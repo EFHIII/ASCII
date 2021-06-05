@@ -16,19 +16,28 @@
     <label for="size">Size:</label>
     <input type="number" id="size" name="size" placeholder="Size" min="0" value="200">
     <label for="Ratio">Ratio:</label>
-    <input type="number" step=".01" id="ratio" name="ratio" placeholder="Ratio" min="0" value="0.82">
+    <input type="number" step=".01" id="ratio" name="ratio" placeholder="Ratio" min="0" value="1">
     <label for="type">Type:</label>
     <select name="type" id="type">
-      <option value="0">Detailed Gradient</option>
-      <option value="1">Medium Gradient</option>
-      <option value="2">Simple Gradient</option>
-      <option value="3">Monocolor</option>
-      <option value="4">box Gradient</option>
-      <option value="5">box Devision</option>
-      <option value="6">Floyd box Gradient</option>
-      <option value="7">Floyd box Devision</option>
-      <option value="8">Silhouette box Devision</option>
-      <option value="-1">Dithered Brail</option>
+      <optgroup>
+        <option value="-1">Dithered Brail</option>
+        <option value="0">Detailed Gradient</option>
+        <option value="1">Medium Gradient</option>
+        <option value="2">Simple Gradient</option>
+        <option value="3">Monocolor</option>
+      </optgroup>
+      <optgroup>
+        <option value="4">Dithered Gradient</option>
+        <option value="5" selected="selected">Floyd Gradient</option>
+        <option value="6">Silhouette Gradient</option>
+      </optgroup>
+      <optgroup>
+        <option value="7">Block box Gradient</option>
+        <option value="8">Block box Devision</option>
+        <option value="9">Block Floyd box Gradient</option>
+        <option value="10">Block Floyd box Devision</option>
+        <option value="11">Block Silhouette box Devision</option>
+      </optgroup>
     </select>
     <input type="submit" autocomplete="off" value="Submit" class="btn">
   </form>
