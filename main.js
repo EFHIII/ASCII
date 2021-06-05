@@ -54,7 +54,8 @@ P = [
 R = a => (a - d) * 255 / (255 - d - (255 - b));
 
 function dither(x, y, v, sh) {
-  n = R(v) / 255;
+  //n = R(v) / 255;
+  n = v / 255;
   if(sh){
     n = Math.pow(n, 2 / 3);
     n = (n+64/255)*(255-64)/255;
@@ -95,7 +96,7 @@ function escapeHtml(unsafe) {
 p = a => new Promise((r) => { setTimeout(r, 1e3) });
 D = a => document.getElementById(a);
 
-let defaultUrl = { url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png', size: 200, ratio: 1, type:"5" };
+let defaultUrl = { url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png', size: 200, ratio: 1, power: 2, type:"5" };
 
 function setUrl() {
   if(!history.pushState) { return; }
@@ -113,7 +114,16 @@ function setUrl() {
   window.history.pushState({ path: newurl }, '', newurl);
 }
 
+let power = 2;
+
 function drawBrail(w, h, a) {
+  if(invert){
+    a = a.map(a=>Math.pow((255-a)/255,power)*255);
+  }
+  else{
+    a = a.map(a=>Math.pow(a/255,power)*255);
+  }
+
   let t = '';
   for(i = 0; i < h - 2; i += 4) {
     for(j = 0; j < w - 1; j += 2) {
@@ -176,8 +186,6 @@ function floyd(colorDepth, tempData, width, height) {
   return ans;
 }
 
-let sv=[];
-
 function drawBoxDevisionSilhouette(w, h, a) {
   const blocks = " ▖▗▄▘▌▚▙▝▞▐▟▀▛▜█";
 
@@ -211,17 +219,16 @@ palette2=["`'\"▀██", " :+#▒█", ".,g▄██"]
 let palette3 = ['▀▀██',' ▒█','▄▄█'];
 
 function drawBoxGradient(w, h, a) {
-  a=a.map(a=>(a/255)*(a/255)*255);
-
+  if(!invert){
+    a = a.map(a=>Math.pow((255-a)/255,power)*255);
+  }
+  else{
+    a = a.map(a=>Math.pow(a/255,power)*255);
+  }
   let t = '';
   for(i = 0; i < h; i ++) {
     for(j = 0; j < w; j ++) {
-      if(invert){
-        t += palette[(a[(j+i*w)*4]/255*(palette.length-1)>>0)+1-dither(i,j,((a[(j+i*w)*4]/255*(palette.length-1))%1)*255)];
-      }
-      else{
-        t += palette[palette.length-1-(a[(j+i*w)*4]/255*(palette.length-1)>>0)+1-dither(i,j,((a[(j+i*w)*4]/255*(palette.length-1))%1)*255)];
-      }
+      t += palette[(a[(j+i*w)*4]/255*(palette.length-1)>>0)+dither(i,j,((a[(j+i*w)*4]/255*(palette.length-1))%1)*255)];
     }
     t += '\n';
   }
@@ -230,15 +237,20 @@ function drawBoxGradient(w, h, a) {
 function drawBoxDevision(w, h, a) {
   const blocks = " ▖▗▄▘▌▚▙▝▞▐▟▀▛▜█";
 
-  a=a.map(a=>(a/255)*(a/255)*255);
+  if(!invert){
+    a = a.map(a=>Math.pow((255-a)/255,power)*255);
+  }
+  else{
+    a = a.map(a=>Math.pow(a/255,power)*255);
+  }
 
   let t = '';
   for(i = 0; i < h-1; i +=2) {
     for(j = 0; j < w-1; j +=2) {
       t += blocks[
-        15-dither(i,j+1,a[(1+j+(i)*w)*4])*8-
-        dither(i+1,j+1,a[(1+j+(1+i)*w)*4])*2-
-        dither(i,j,a[(j+(i)*w)*4])*4-
+        dither(i,j+1,a[(1+j+(i)*w)*4])*8+
+        dither(i+1,j+1,a[(1+j+(1+i)*w)*4])*2+
+        dither(i,j,a[(j+(i)*w)*4])*4+
         dither(i+1,j,a[(j+(1+i)*w)*4])];
     }
     t += '\n';
@@ -247,9 +259,14 @@ function drawBoxDevision(w, h, a) {
 }
 
 function drawBoxGradientFloyd(w, h, a) {
-  let newData = floyd(palette.length-1, a.map(a=>(a/255)*(a/255)*255), w*1, h*1);
+  if(!invert){
+    a = a.map(a=>Math.pow((255-a)/255,power)*255);
+  }
+  else{
+    a = a.map(a=>Math.pow(a/255,power)*255);
+  }
 
-  sv=newData;
+  let newData = floyd(palette.length-1, a, w*1, h*1);
 
   let t = '';
   for(i = 0; i < h; i ++) {
@@ -263,9 +280,14 @@ function drawBoxGradientFloyd(w, h, a) {
 function drawBoxDevisionFloyd(w, h, a) {
   const blocks = " ▖▗▄▘▌▚▙▝▞▐▟▀▛▜█";
 
-  let newData = floyd(1, a.map(a=>(a/255)*(a/255)*255), w*1, h*1);
+  if(!invert){
+    a = a.map(a=>Math.pow((255-a)/255,power)*255);
+  }
+  else{
+    a = a.map(a=>Math.pow(a/255,power)*255);
+  }
 
-  sv=newData;
+  let newData = floyd(1, a, w*1, h*1);
 
   let t = '';
   for(i = 0; i < h-1; i +=2) {
@@ -285,17 +307,24 @@ function drawBoxDevisionFloyd(w, h, a) {
 function drawBoxGradient2(W, H, a, pal = palette2) {
   let newData = [];
 
+  if(!invert){
+    a = a.map(a=>Math.pow((255-a)/255,power)*255);
+  }
+  else{
+    a = a.map(a=>Math.pow(a/255,power)*255);
+  }
+
   for(let j=0;j<H;j++){
     for(let i=0;i<W;i++){
-      newData.push((a[(i+j*W)*4]/255*(pal[0].length-1.5)>>0)+1-dither(i,j,(a[(i+j*W)*4]/255*(pal[0].length-1.5)%1)*255),0,0,255);
+      newData.push((a[(i+j*W)*4]/255*(pal[0].length-1.5)>>0)+dither(i,j,(a[(i+j*W)*4]/255*(pal[0].length-1.5)%1)*255),0,0,255);
     }
   }
 
   let t = '';
   for(i = 0; i < H-1; i +=2) {
     for(j = 0; j < W; j ++) {
-        A = Math.round(R(255-newData[(i * W + j) * 4]*255/(pal[0].length-1.5))/255*(pal[0].length-1.5));
-        B = Math.round(R(255-newData[((i + 1) * W + j) * 4]*255/(pal[0].length-1.5))/255*(pal[0].length-1.5));
+        A = Math.round((newData[(i * W + j)*4]/(pal[0].length-1.5))*(pal[0].length-1.5));
+        B = Math.round((newData[((i + 1) * W + j)*4]/(pal[0].length-1.5))*(pal[0].length-1.5));
         t += pal[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
     }
     t += '\n';
@@ -304,14 +333,21 @@ function drawBoxGradient2(W, H, a, pal = palette2) {
 }
 
 function drawBoxGradientFloyd2(w, h, a) {
-  let newData = floyd(palette2[0].length-1, a.map(a=>a*(palette2[0].length-1.3)/(palette2[0].length-1)), w*1, h*1);
+  let newData = floyd(palette2[0].length-1, a.map(a=>Math.pow(a/255,power)*255*(palette2[0].length-1.3)/(palette2[0].length-1)), w*1, h*1);
 
   let t = '';
   for(i = 0; i < H-1; i +=2) {
     for(j = 0; j < W; j ++) {
-        A = Math.round(R(255-newData[i * W + j]*255/(palette2[0].length-1))/255*(palette2[0].length-1));
-        B = Math.round(R(255-newData[(i + 1) * W + j]*255/(palette2[0].length-1))/255*(palette2[0].length-1));
-        t += palette2[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
+        if(!invert){
+          A = Math.round((1-newData[i * W + j]/(palette2[0].length-1))*(palette2[0].length-1));
+          B = Math.round((1-newData[(i + 1) * W + j]/(palette2[0].length-1))*(palette2[0].length-1));
+          t += palette2[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
+        }
+        else{
+          A = Math.round((newData[i * W + j]/(palette2[0].length-1))*(palette2[0].length-1));
+          B = Math.round((newData[(i + 1) * W + j]/(palette2[0].length-1))*(palette2[0].length-1));
+          t += palette2[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
+        }
     }
     t += '\n';
   }
@@ -324,10 +360,11 @@ async function ASCII(url, size) {
   s.crossOrigin = "Anonymous";
   c = D('i');
   X = c.getContext('2d');
+  power = D('power').value;
   await p();
   W = c.width = size;
   H = c.height = size * s.height / s.width * Ratio * (Brail ? 1.35 : 1) * (DV > 6 ? 0.5 : 1);
-  X.filter = DV == 6 ? "grayscale(100%) contrast(25600%)" : "grayscale(100%)";
+  X.filter = DV == 6 ? `grayscale(100%) contrast(25600%)` : `grayscale(100%)`;
   X.drawImage(s, 0, 0, W, H);
   a = X.getImageData(0, 0, W, H).data;
 
