@@ -1,3 +1,25 @@
+document.getElementById('inp').onchange = function(e) {
+  let img = new Image();
+  img.onload = drawFile;
+  img.onerror = failed;
+  img.src = URL.createObjectURL(this.files[0]);
+};
+
+function drawFile() {
+  let canvas = document.getElementById('fileCanvas');
+  canvas.width = this.width;
+  canvas.height = this.height;
+  let ctx = canvas.getContext('2d');
+  ctx.drawImage(this, 0, 0);
+  document.getElementById('url').value = canvas.toDataURL();
+  setUrl();
+  submitSearch();
+}
+
+function failed() {
+  console.error("The provided file couldn't be loaded as an Image media");
+}
+
 let invert = false;
 
 Ratio = 0.82;
@@ -56,9 +78,9 @@ R = a => (a - d) * 255 / (255 - d - (255 - b));
 function dither(x, y, v, sh) {
   //n = R(v) / 255;
   n = v / 255;
-  if(sh){
+  if(sh) {
     n = Math.pow(n, 2 / 3);
-    n = (n+64/255)*(255-64)/255;
+    n = (n + 64 / 255) * (255 - 64) / 255;
   }
   let mat = [
     [1, 33, 13, 45, 3, 35, 15, 47],
@@ -71,7 +93,7 @@ function dither(x, y, v, sh) {
     [12, 44, 8, 40, 10, 42, 6, 38],
     [54, 32, 64, 24, 56, 30, 62, 22],
   ];
-  if(n > (mat[x % 8][y % 8]-0.5) / 64) {
+  if(n > (mat[x % 8][y % 8] - 0.5) / 64) {
     return 1;
   }
   return 0;
@@ -93,35 +115,50 @@ function escapeHtml(unsafe) {
     .replace(/ /g, "&nbsp;")
     .replace(/\n/g, "<br>");
 }
-p = a => new Promise((r) => { setTimeout(r, 1e3) });
+p = a => new Promise((r) => {
+  setTimeout(r, 1e3)
+});
 D = a => document.getElementById(a);
 
-let defaultUrl = { url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png', size: 200, ratio: 1, power: 1, contrast:1, brightness:1, type:"5" };
+let defaultUrl = {
+  url: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png',
+  size: 200,
+  ratio: 1,
+  power: 1,
+  contrast: 1,
+  brightness: 1,
+  type: "5"
+};
 
 function setUrl() {
-  if(!history.pushState) { return; }
+  if(!history.pushState) {
+    return;
+  }
   let qs = '?';
   let first = true;
   for(let el in defaultUrl) {
     let element = document.getElementById(el);
     if(element.value != defaultUrl[el]) {
-      if(!first) { qs += '&'; }
+      if(!first) {
+        qs += '&';
+      }
       first = false;
       qs += el + '=' + encodeURIComponent(element.value);
     }
   }
   let newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + qs;
-  window.history.pushState({ path: newurl }, '', newurl);
+  window.history.pushState({
+    path: newurl
+  }, '', newurl);
 }
 
 let power = 1;
 
 function drawBrail(w, h, a) {
-  if(invert){
-    a = a.map(a=>Math.pow((255-a)/255,power)*255);
-  }
-  else{
-    a = a.map(a=>Math.pow(a/255,power)*255);
+  if(invert) {
+    a = a.map(a => Math.pow((255 - a) / 255, power) * 255);
+  } else {
+    a = a.map(a => Math.pow(a / 255, power) * 255);
   }
 
   let t = '';
@@ -143,45 +180,48 @@ function drawBrail(w, h, a) {
 }
 
 function floyd(colorDepth, tempData, width, height) {
-  let ans=tempData.slice();
+  let ans = tempData.slice();
 
   let maxV = colorDepth / 255;
 
-  let mem = [[],[]];
-  for (let i = 0; i < width; i++) {
-    mem[0][i] = 4/16+tempData[i*4]*maxV;
+  let mem = [
+    [],
+    []
+  ];
+  for(let i = 0; i < width; i++) {
+    mem[0][i] = 4 / 16 + tempData[i * 4] * maxV;
     //mem[0][i] = Math.min(colorDepth,Math.random()*colorDepth/2 + tempData[i]*maxV);
-    mem[1][i] = tempData[(i+width)*4]*maxV;
+    mem[1][i] = tempData[(i + width) * 4] * maxV;
   }
   //mem[1][0] += (Math.random()*4 + 4) / 16;
   mem[1][0] += 4 / 16;
 
   let y = 0;
-  while (y < height) {
-    for (let x = 0; x < width; x++) {
+  while(y < height) {
+    for(let x = 0; x < width; x++) {
       let oldp = mem[0][x];
-      let newp = Math.max(0,Math.min(colorDepth,Math.round(oldp>>0)));//Math.max(0,Math.min(colorDepth,Math.round(oldp)));
-      let err = oldp-newp;//oldp - newp;
-      mem[0][x + 1] += Math.max(0,Math.min(colorDepth,err * 7 / 16));
-      mem[1][x - 1] += Math.max(0,Math.min(colorDepth,err * 3 / 16));
-      mem[1][x] += Math.max(0,Math.min(colorDepth,err * 5 / 16));
-      mem[1][x + 1] += Math.max(0,Math.min(colorDepth,err * 1 / 16));
+      let newp = Math.max(0, Math.min(colorDepth, Math.round(oldp >> 0))); //Math.max(0,Math.min(colorDepth,Math.round(oldp)));
+      let err = oldp - newp; //oldp - newp;
+      mem[0][x + 1] += Math.max(0, Math.min(colorDepth, err * 7 / 16));
+      mem[1][x - 1] += Math.max(0, Math.min(colorDepth, err * 3 / 16));
+      mem[1][x] += Math.max(0, Math.min(colorDepth, err * 5 / 16));
+      mem[1][x + 1] += Math.max(0, Math.min(colorDepth, err * 1 / 16));
     }
-    if (y > 0) {
-      for (let x = 0; x < width; x++) {
-        ans[x + (y - 1) * width] = Math.max(0,Math.min(colorDepth,mem[0][x] >> 0));
+    if(y > 0) {
+      for(let x = 0; x < width; x++) {
+        ans[x + (y - 1) * width] = Math.max(0, Math.min(colorDepth, mem[0][x] >> 0));
         //ans[x + (y - 1) * width] = Math.max(0,mem[0][x]>>0);//Math.max(0,Math.min(colorDepth,(Math.round(mem[0][x]))));
       }
     }
     mem.reverse();
-    for (let x = 0; x < width; x++) {
-      mem[1][x] = tempData[(x + (y + 1) * width)*4]*maxV;
+    for(let x = 0; x < width; x++) {
+      mem[1][x] = tempData[(x + (y + 1) * width) * 4] * maxV;
     }
     mem[1][0] += 4 / 16;
     y++;
   }
-  for (let x = 0; x < width; x++) {
-    ans[x + (y - 1) * width] =  Math.max(0,Math.min(colorDepth,mem[0][x] >> 0));
+  for(let x = 0; x < width; x++) {
+    ans[x + (y - 1) * width] = Math.max(0, Math.min(colorDepth, mem[0][x] >> 0));
   }
   return ans;
 }
@@ -189,24 +229,23 @@ function floyd(colorDepth, tempData, width, height) {
 function drawBoxDevisionSilhouette(w, h, a) {
   const blocks = " ▖▗▄▘▌▚▙▝▞▐▟▀▛▜█";
 
-  a=a.map(a=>(a/255)>0.5?1:0);
+  a = a.map(a => (a / 255) > 0.5 ? 1 : 0);
 
   let t = '';
-  for(i = 0; i < h-3; i +=2) {
-    for(j = 0; j < w-1; j +=2) {
-      if(invert){
+  for(i = 0; i < h - 3; i += 2) {
+    for(j = 0; j < w - 1; j += 2) {
+      if(invert) {
         t += blocks[
-          a[(j+(1+i)*w)*4]*1+
-          a[(1+j+(1+i)*w)*4]*2+
-          a[(j+(i)*w)*4]*4+
-          a[(1+j+(i)*w)*4]*8];
-      }
-      else{
+          a[(j + (1 + i) * w) * 4] * 1 +
+          a[(1 + j + (1 + i) * w) * 4] * 2 +
+          a[(j + (i) * w) * 4] * 4 +
+          a[(1 + j + (i) * w) * 4] * 8];
+      } else {
         t += blocks[
-          15-a[(j+(1+i)*w)*4]*1-
-          a[(1+j+(1+i)*w)*4]*2-
-          a[(j+(i)*w)*4]*4-
-          a[(1+j+(i)*w)*4]*8];
+          15 - a[(j + (1 + i) * w) * 4] * 1 -
+          a[(1 + j + (1 + i) * w) * 4] * 2 -
+          a[(j + (i) * w) * 4] * 4 -
+          a[(1 + j + (i) * w) * 4] * 8];
       }
     }
     t += '\n';
@@ -215,44 +254,43 @@ function drawBoxDevisionSilhouette(w, h, a) {
 }
 
 let palette = ' ▏▎▍▌▋▊▉█';
-let palette2=["`'\"▀██", " :+#■█", ".,g▄██"]
+let palette2 = ["`'\"▀██", " :+#■█", ".,g▄██"]
 //let palette2=["`'\"▀██", " :+#▒█", ".,g▄██"]
-let palette3 = ['▀▀██',' ■█','▄▄█'];
+let palette3 = ['▀▀██', ' ■█', '▄▄█'];
 
 function drawBoxGradient(w, h, a) {
-  if(!invert){
-    a = a.map(a=>Math.pow((255-a)/255,power)*255);
-  }
-  else{
-    a = a.map(a=>Math.pow(a/255,power)*255);
+  if(!invert) {
+    a = a.map(a => Math.pow((255 - a) / 255, power) * 255);
+  } else {
+    a = a.map(a => Math.pow(a / 255, power) * 255);
   }
   let t = '';
-  for(i = 0; i < h; i ++) {
-    for(j = 0; j < w; j ++) {
-      t += palette[(a[(j+i*w)*4]/255*(palette.length-1)>>0)+dither(i,j,((a[(j+i*w)*4]/255*(palette.length-1))%1)*255)];
+  for(i = 0; i < h; i++) {
+    for(j = 0; j < w; j++) {
+      t += palette[(a[(j + i * w) * 4] / 255 * (palette.length - 1) >> 0) + dither(i, j, ((a[(j + i * w) * 4] / 255 * (palette.length - 1)) % 1) * 255)];
     }
     t += '\n';
   }
   return t;
 }
+
 function drawBoxDevision(w, h, a) {
   const blocks = " ▖▗▄▘▌▚▙▝▞▐▟▀▛▜█";
 
-  if(!invert){
-    a = a.map(a=>Math.pow((255-a)/255,power)*255);
-  }
-  else{
-    a = a.map(a=>Math.pow(a/255,power)*255);
+  if(!invert) {
+    a = a.map(a => Math.pow((255 - a) / 255, power) * 255);
+  } else {
+    a = a.map(a => Math.pow(a / 255, power) * 255);
   }
 
   let t = '';
-  for(i = 0; i < h-1; i +=2) {
-    for(j = 0; j < w-1; j +=2) {
+  for(i = 0; i < h - 1; i += 2) {
+    for(j = 0; j < w - 1; j += 2) {
       t += blocks[
-        dither(i,j+1,a[(1+j+(i)*w)*4])*8+
-        dither(i+1,j+1,a[(1+j+(1+i)*w)*4])*2+
-        dither(i,j,a[(j+(i)*w)*4])*4+
-        dither(i+1,j,a[(j+(1+i)*w)*4])];
+        dither(i, j + 1, a[(1 + j + (i) * w) * 4]) * 8 +
+        dither(i + 1, j + 1, a[(1 + j + (1 + i) * w) * 4]) * 2 +
+        dither(i, j, a[(j + (i) * w) * 4]) * 4 +
+        dither(i + 1, j, a[(j + (1 + i) * w) * 4])];
     }
     t += '\n';
   }
@@ -260,44 +298,43 @@ function drawBoxDevision(w, h, a) {
 }
 
 function drawBoxGradientFloyd(w, h, a) {
-  if(!invert){
-    a = a.map(a=>Math.pow((255-a)/255,power)*255);
-  }
-  else{
-    a = a.map(a=>Math.pow(a/255,power)*255);
+  if(!invert) {
+    a = a.map(a => Math.pow((255 - a) / 255, power) * 255);
+  } else {
+    a = a.map(a => Math.pow(a / 255, power) * 255);
   }
 
-  let newData = floyd(palette.length-1, a, w*1, h*1);
+  let newData = floyd(palette.length - 1, a, w * 1, h * 1);
 
   let t = '';
-  for(i = 0; i < h; i ++) {
-    for(j = 0; j < w; j ++) {
-      t += palette[newData[j+i*w]];
+  for(i = 0; i < h; i++) {
+    for(j = 0; j < w; j++) {
+      t += palette[newData[j + i * w]];
     }
     t += '\n';
   }
   return t;
 }
+
 function drawBoxDevisionFloyd(w, h, a) {
   const blocks = " ▖▗▄▘▌▚▙▝▞▐▟▀▛▜█";
 
-  if(!invert){
-    a = a.map(a=>Math.pow((255-a)/255,power)*255);
-  }
-  else{
-    a = a.map(a=>Math.pow(a/255,power)*255);
+  if(!invert) {
+    a = a.map(a => Math.pow((255 - a) / 255, power) * 255);
+  } else {
+    a = a.map(a => Math.pow(a / 255, power) * 255);
   }
 
-  let newData = floyd(1, a, w*1, h*1);
+  let newData = floyd(1, a, w * 1, h * 1);
 
   let t = '';
-  for(i = 0; i < h-1; i +=2) {
-    for(j = 0; j < w-1; j +=2) {
+  for(i = 0; i < h - 1; i += 2) {
+    for(j = 0; j < w - 1; j += 2) {
       t += blocks[
-        newData[1+j+(i)*w]*8+
-        newData[1+j+(1+i)*w]*2+
-        newData[j+(i)*w]*4+
-        newData[j+(1+i)*w]];
+        newData[1 + j + (i) * w] * 8 +
+        newData[1 + j + (1 + i) * w] * 2 +
+        newData[j + (i) * w] * 4 +
+        newData[j + (1 + i) * w]];
     }
     t += '\n';
   }
@@ -308,25 +345,24 @@ function drawBoxDevisionFloyd(w, h, a) {
 function drawBoxGradient2(W, H, a, pal = palette2) {
   let newData = [];
 
-  if(!invert){
-    a = a.map(a=>Math.pow((255-a)/255,power)*255);
-  }
-  else{
-    a = a.map(a=>Math.pow(a/255,power)*255);
+  if(!invert) {
+    a = a.map(a => Math.pow((255 - a) / 255, power) * 255);
+  } else {
+    a = a.map(a => Math.pow(a / 255, power) * 255);
   }
 
-  for(let j=0;j<H;j++){
-    for(let i=0;i<W;i++){
-      newData.push((a[(i+j*W)*4]/255*(pal[0].length-1.5)>>0)+dither(i,j,(a[(i+j*W)*4]/255*(pal[0].length-1.5)%1)*255),0,0,255);
+  for(let j = 0; j < H; j++) {
+    for(let i = 0; i < W; i++) {
+      newData.push((a[(i + j * W) * 4] / 255 * (pal[0].length - 1.5) >> 0) + dither(i, j, (a[(i + j * W) * 4] / 255 * (pal[0].length - 1.5) % 1) * 255), 0, 0, 255);
     }
   }
 
   let t = '';
-  for(i = 0; i < H-1; i +=2) {
-    for(j = 0; j < W; j ++) {
-        A = Math.round((newData[(i * W + j)*4]/(pal[0].length-1.5))*(pal[0].length-1.5));
-        B = Math.round((newData[((i + 1) * W + j)*4]/(pal[0].length-1.5))*(pal[0].length-1.5));
-        t += pal[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
+  for(i = 0; i < H - 1; i += 2) {
+    for(j = 0; j < W; j++) {
+      A = Math.round((newData[(i * W + j) * 4] / (pal[0].length - 1.5)) * (pal[0].length - 1.5));
+      B = Math.round((newData[((i + 1) * W + j) * 4] / (pal[0].length - 1.5)) * (pal[0].length - 1.5));
+      t += pal[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
     }
     t += '\n';
   }
@@ -334,21 +370,20 @@ function drawBoxGradient2(W, H, a, pal = palette2) {
 }
 
 function drawBoxGradientFloyd2(w, h, a) {
-  let newData = floyd(palette2[0].length-1, a.map(a=>Math.pow(a/255,power)*255*(palette2[0].length-1.3)/(palette2[0].length-1)), w*1, h*1);
+  let newData = floyd(palette2[0].length - 1, a.map(a => Math.pow(a / 255, power) * 255 * (palette2[0].length - 1.3) / (palette2[0].length - 1)), w * 1, h * 1);
 
   let t = '';
-  for(i = 0; i < H-1; i +=2) {
-    for(j = 0; j < W; j ++) {
-        if(!invert){
-          A = Math.round((1-newData[i * W + j]/(palette2[0].length-1))*(palette2[0].length-1));
-          B = Math.round((1-newData[(i + 1) * W + j]/(palette2[0].length-1))*(palette2[0].length-1));
-          t += palette2[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
-        }
-        else{
-          A = Math.round((newData[i * W + j]/(palette2[0].length-1))*(palette2[0].length-1));
-          B = Math.round((newData[(i + 1) * W + j]/(palette2[0].length-1))*(palette2[0].length-1));
-          t += palette2[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
-        }
+  for(i = 0; i < H - 1; i += 2) {
+    for(j = 0; j < W; j++) {
+      if(!invert) {
+        A = Math.round((1 - newData[i * W + j] / (palette2[0].length - 1)) * (palette2[0].length - 1));
+        B = Math.round((1 - newData[(i + 1) * W + j] / (palette2[0].length - 1)) * (palette2[0].length - 1));
+        t += palette2[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
+      } else {
+        A = Math.round((newData[i * W + j] / (palette2[0].length - 1)) * (palette2[0].length - 1));
+        B = Math.round((newData[(i + 1) * W + j] / (palette2[0].length - 1)) * (palette2[0].length - 1));
+        t += palette2[A == B ? 1 : A > B ? 0 : 2][(A + B) / 2 >> 0];
+      }
     }
     t += '\n';
   }
@@ -390,29 +425,29 @@ async function ASCII(url, size) {
     return drawBrail(W, H, a);
   }
 
-  if(DV == 4){
+  if(DV == 4) {
     return drawBoxGradient2(W, H, a);
   }
-  if(DV == 5){
+  if(DV == 5) {
     return drawBoxGradientFloyd2(W, H, a);
   }
-  if(DV == 6){
+  if(DV == 6) {
     return drawBoxGradient2(W, H, a, palette3);
   }
 
-  if(DV == 7){
+  if(DV == 7) {
     return drawBoxGradient(W, H, a);
   }
-  if(DV == 8){
+  if(DV == 8) {
     return drawBoxDevision(W, H, a);
   }
-  if(DV == 9){
+  if(DV == 9) {
     return drawBoxGradientFloyd(W, H, a);
   }
-  if(DV == 10){
+  if(DV == 10) {
     return drawBoxDevisionFloyd(W, H, a);
   }
-  if(DV == 11){
+  if(DV == 11) {
     return drawBoxDevisionSilhouette(W, H, a);
   }
   for(i = 0; i < H - 1; i += 2) {
@@ -449,7 +484,9 @@ toggleBlack();
 DV = '5';
 async function submitSearch(a) {
   Ratio = D('ratio').value;
-  if(a||DV != D('type').value) { await loadExample(); }
+  if(a || DV != D('type').value) {
+    await loadExample();
+  }
   D('c').innerHTML = escapeHtml(await ASCII(D('url').value, D('size').value));
   return false;
 }

@@ -10,6 +10,8 @@
 <body>
   <input type="button" value="Dark" class="btn" onclick="toggleBlack()">
   <input type="button" value="Invert" class="btn" onclick="invertColors()">
+  <input type="file" id="inp">
+  <canvas id="fileCanvas" style="display:none"></canvas>
   <form onsubmit="submitSearch(1);return false">
     <label for="url">URL:</label>
     <input type="text" id="url" name="url" placeholder="URL" value="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png">
