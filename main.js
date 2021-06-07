@@ -12,7 +12,6 @@ function drawFile() {
   let ctx = canvas.getContext('2d');
   ctx.drawImage(this, 0, 0);
   document.getElementById('url').value = canvas.toDataURL();
-  setUrl();
   submitSearch();
 }
 
